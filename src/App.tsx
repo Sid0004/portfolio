@@ -303,6 +303,28 @@ function App() {
     axios.post('/api/gemini/init', { profile: SIDDHANT_PROFILE }).catch(() => {});
   }, []);
 
+  // Autofocus terminal input on any keypress if not already focused
+  useEffect(() => {
+    function handleGlobalKeydown(e: KeyboardEvent) {
+      // Ignore if input is already focused, or if modifier keys are pressed
+      if (
+        document.activeElement === inputRef.current ||
+        e.metaKey || e.ctrlKey || e.altKey || e.isComposing ||
+        // Ignore if focus is on a button, link, textarea, or contenteditable
+        ["BUTTON", "A", "TEXTAREA"].includes(document.activeElement?.tagName || "") ||
+        (document.activeElement && (document.activeElement as HTMLElement).isContentEditable)
+      ) {
+        return;
+      }
+      // Only focus for visible characters (not Tab, Shift, etc)
+      if (e.key.length === 1) {
+        inputRef.current?.focus();
+      }
+    }
+    document.addEventListener('keydown', handleGlobalKeydown);
+    return () => document.removeEventListener('keydown', handleGlobalKeydown);
+  }, []);
+
   const handleCommand = async (cmd: string) => {
     const trimmedCmd = cmd.trim();
     // Built-in commands
