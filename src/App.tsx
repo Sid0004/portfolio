@@ -201,6 +201,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [showExit, setShowExit] = useState(false);
+  const [isMobileBlocked, setIsMobileBlocked] = useState(false);
   // Remove theme state and button
   // Remove theme class from root div
   // Restore root div to:
@@ -325,6 +326,23 @@ function App() {
     return () => document.removeEventListener('keydown', handleGlobalKeydown);
   }, []);
 
+  // Detect mobile or small screens and block with a message
+  useEffect(() => {
+    const checkMobile = () => {
+      const ua = navigator.userAgent || '';
+      const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+      const isSmallViewport = window.innerWidth < 900; // adjust threshold if needed
+      setIsMobileBlocked(isMobileUA || isSmallViewport);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    window.addEventListener('orientationchange', checkMobile);
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('orientationchange', checkMobile);
+    };
+  }, []);
+
   const handleCommand = async (cmd: string) => {
     const trimmedCmd = cmd.trim();
     // Built-in commands
@@ -440,6 +458,17 @@ function App() {
       }
     });
   };
+
+  if (isMobileBlocked) {
+    return (
+      <div className="mobile-block" style={{height: '100vh', width: '100vw', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000', flexDirection: 'column', textAlign: 'center', padding: '1.5rem'}}>
+        <h1 style={{ color: '#00ff5a', fontSize: '2.2rem', marginBottom: '1rem' }}>Best viewed on desktop</h1>
+        <p style={{ color: '#fff', fontSize: '1.1rem', maxWidth: '560px', lineHeight: 1.6 }}>
+          This interactive terminal portfolio is optimized for larger screens. Please open on a desktop or laptop for the best experience.
+        </p>
+      </div>
+    );
+  }
 
   if (showExit) {
     return (
