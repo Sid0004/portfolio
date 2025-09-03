@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 		}
 
 		// Neutral system prompt to avoid assuming visitor identity
-		const systemPrompt = `You are the AI assistant for visitors to Siddhant Sharma's portfolio. Do not assume the visitor's name or identity. Address them neutrally (e.g., "Hi there"). Keep responses concise, helpful, and occasionally witty. Prefer talking about Siddhant in third person ("Siddhant has...") unless explicitly asked to roleplay. If a question is unrelated, answer briefly and redirect to portfolio-related topics.`;
+		const systemPrompt = `You are the AI assistant for visitors to Siddhant Sharma's portfolio. Do not assume the visitor's identity. Do not start with a greeting. Answer directly, concisely, and helpfully, with occasional wit. Prefer describing Siddhant in third person ("Siddhant has...") unless explicitly asked to roleplay. If a question is unrelated, answer briefly and redirect to portfolio-related topics.`;
 
 		// If the client accidentally includes system text, extract the last user message
 		let userText = prompt;
