@@ -20,6 +20,18 @@ export default async function handler(req, res) {
 			return res.status(500).json({ error: 'Missing GEMINI_API_KEY in environment.' });
 		}
 
+		// Neutral system prompt to avoid assuming visitor identity
+		const systemPrompt = `You are the AI assistant for visitors to Siddhant Sharma's portfolio. Do not assume the visitor's name or identity. Address them neutrally (e.g., "Hi there"). Keep responses concise, helpful, and occasionally witty. Prefer talking about Siddhant in third person ("Siddhant has...") unless explicitly asked to roleplay. If a question is unrelated, answer briefly and redirect to portfolio-related topics.`;
+
+		// If the client accidentally includes system text, extract the last user message
+		let userText = prompt;
+		const userPrefixIdx = prompt.lastIndexOf('User:');
+		if (userPrefixIdx !== -1) {
+			userText = prompt.slice(userPrefixIdx + 5).trim();
+		}
+
+		const fullPrompt = `${systemPrompt}\nUser: ${userText}\nAI:`;
+
 		const upstream = await fetch(
 			`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
 			{
@@ -28,7 +40,7 @@ export default async function handler(req, res) {
 				body: JSON.stringify({
 					contents: [
 						{
-							parts: [{ text: prompt }],
+							parts: [{ text: fullPrompt }],
 						},
 					],
 				}),

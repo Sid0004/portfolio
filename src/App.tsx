@@ -421,7 +421,7 @@ function App() {
       if (item.type === 'input') {
         return (
           <div key={idx} className="terminal-input-line left-align">
-            <span className="terminal-prompt-user">guest</span>
+            <span className="terminal-prompt-user">Siddhant</span>
             <span className="terminal-prompt-symbol">@portfolio:~$</span> {item.value}
           </div>
         );
