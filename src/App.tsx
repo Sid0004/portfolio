@@ -421,7 +421,7 @@ function App() {
       if (item.type === 'input') {
         return (
           <div key={idx} className="terminal-input-line left-align">
-            <span className="terminal-prompt-user">siddhant</span>
+            <span className="terminal-prompt-user">guest</span>
             <span className="terminal-prompt-symbol">@portfolio:~$</span> {item.value}
           </div>
         );
@@ -550,7 +550,7 @@ function App() {
               autoComplete="off"
               style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
             >
-              <span className="terminal-prompt-user">siddhant</span>
+              <span className="terminal-prompt-user">guest</span>
               <span className="terminal-prompt-symbol">@portfolio:~$</span>
               <span style={{ position: 'relative', display: 'inline-block' }}>
                 <input
