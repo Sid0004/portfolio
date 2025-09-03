@@ -181,9 +181,8 @@ const SIDDHANT_PROFILE = {
 };
 
 
-const SYSTEM_CONTEXT = `
-You are the AI terminal assistant for Siddhant Sharma — a final-year B.Tech Computer Science student and passionate Software Engineer. Speak as if you know everything about Siddhant. Be concise, helpful, occasionally funny or sarcastic. Answer any question using Siddhant's background, skills, projects, or interests. If irrelevant, reply briefly and redirect to portfolio-related topics.
-`.trim();
+// Deprecated: system context now lives on the server
+// const SYSTEM_CONTEXT = `...`;
 
 function App() {
   const [history, setHistory] = useState<HistoryItem[]>([
@@ -375,7 +374,7 @@ function App() {
       { type: 'output', value: 'AI assistant is thinking...' }
     ]);
     try {
-      const response = await axios.post('/api/gemini', { prompt: SYSTEM_CONTEXT + '\nUser: ' + trimmedCmd });
+      const response = await axios.post('/api/gemini', { prompt: trimmedCmd, profile: SIDDHANT_PROFILE });
       const aiReply = response.data.text || "AI could not generate a response.";
       setHistory(prev => [
         ...prev.slice(0, -1),
@@ -421,7 +420,7 @@ function App() {
       if (item.type === 'input') {
         return (
           <div key={idx} className="terminal-input-line left-align">
-            <span className="terminal-prompt-user">Siddhant</span>
+            <span className="terminal-prompt-user">guest</span>
             <span className="terminal-prompt-symbol">@portfolio:~$</span> {item.value}
           </div>
         );

@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
 	try {
 		const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-		const { prompt } = body;
+		const { prompt, profile } = body;
 
 		if (!prompt || typeof prompt !== 'string') {
 			return res.status(400).json({ error: 'Invalid or missing prompt' });
@@ -30,7 +30,36 @@ export default async function handler(req, res) {
 			userText = prompt.slice(userPrefixIdx + 5).trim();
 		}
 
-		const fullPrompt = `${systemPrompt}\nUser: ${userText}\nAI:`;
+		// Build structured summary from optional profile
+		let profileSummary = '';
+		if (profile && typeof profile === 'object') {
+			const skills = Array.isArray(profile.skills) ? profile.skills.join(', ') : '';
+			const projects = Array.isArray(profile.projects)
+				? profile.projects
+						.map((p) => {
+							const name = p?.name || '';
+							const desc = p?.description || '';
+							return name ? `- ${name}: ${desc}` : null;
+						})
+						.filter(Boolean)
+						.join('\n')
+				: '';
+			const achievements = Array.isArray(profile.majorAchievements)
+				? profile.majorAchievements.map((a) => `- ${a}`).join('\n')
+				: '';
+			const interests = Array.isArray(profile.interests) ? profile.interests.join(', ') : '';
+
+			profileSummary = [
+				skills ? `Skills: ${skills}` : '',
+				projects ? `Projects:\n${projects}` : '',
+				achievements ? `Achievements:\n${achievements}` : '',
+				interests ? `Interests: ${interests}` : '',
+			]
+				.filter(Boolean)
+				.join('\n');
+		}
+
+		const fullPrompt = `${systemPrompt}${profileSummary ? `\n\nStructured summary (use these facts directly, do not invent):\n${profileSummary}` : ''}\n\nUser: ${userText}\nAI:`;
 
 		const upstream = await fetch(
 			`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
