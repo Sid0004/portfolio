@@ -39,10 +39,39 @@ app.post('/api/gemini', async (req, res) => {
   const ip = req.ip;
   const profile = sessionProfiles[ip];
 
+  // Build a structured summary from the stored profile to ground the AI in concrete facts
+  let profileSummary = '';
+  if (profile && typeof profile === 'object') {
+    const skills = Array.isArray(profile.skills) ? profile.skills.join(', ') : '';
+    const projects = Array.isArray(profile.projects)
+      ? profile.projects
+          .map((p) => {
+            const name = p?.name || '';
+            const desc = p?.description || '';
+            return name ? `- ${name}: ${desc}` : null;
+          })
+          .filter(Boolean)
+          .join('\n')
+      : '';
+    const achievements = Array.isArray(profile.majorAchievements)
+      ? profile.majorAchievements.map((a) => `- ${a}`).join('\n')
+      : '';
+    const interests = Array.isArray(profile.interests) ? profile.interests.join(', ') : '';
+
+    profileSummary = [
+      skills ? `Skills: ${skills}` : '',
+      projects ? `Projects:\n${projects}` : '',
+      achievements ? `Achievements:\n${achievements}` : '',
+      interests ? `Interests: ${interests}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
+
   const systemPrompt = profile
-  ? `You are the AI assistant for visitors to Siddhant Sharma's portfolio. Here is Siddhant's profile: ${JSON.stringify(profile)}\n
-Do not assume the visitor's identity. Do not start with a greeting. Answer directly, concisely, and helpfully, with occasional wit. Use Siddhant's background, skills, projects, and interests. If the question is unrelated, answer briefly and steer back to portfolio topics.`
-  : `You are the AI assistant for visitors to Siddhant Sharma's portfolio. Do not assume the visitor's identity. Do not start with a greeting. Answer directly, concisely, and helpfully, with occasional wit. Prefer describing Siddhant in third person ("Siddhant has...") unless explicitly asked to roleplay. If a question is unrelated, answer briefly and redirect to portfolio-related topics. you can be funnny and cool.`
+  ? `You are the AI assistant for visitors to Siddhant Sharma's portfolio. Here is Siddhant's profile: ${JSON.stringify(profile)}\n\nStructured summary (use these facts directly, do not invent):\n${profileSummary}\n\n
+Do not assume the visitor's identity. Do not start with a greeting. Answer directly, concisely, and helpfully, with occasional wit. Use concrete details from the profile and portfolio; never use placeholders like [mention ...] or generic fillers. If specific info is missing, say so briefly. Prefer clear bullets that cite project names, tech, and impact. When asked "why should we hire him" or similar, respond with: a 1–2 sentence value prop followed by 3–5 concrete bullets (skills, flagship projects, outcomes/impact, collaboration/leadership, reliability). If the question is unrelated, answer briefly and steer back to portfolio topics.`
+  : `You are the AI assistant for visitors to Siddhant Sharma's portfolio. Do not assume the visitor's identity. Do not start with a greeting. Answer directly, concisely, and helpfully, with occasional wit. Prefer describing Siddhant in third person ("Siddhant has...") unless explicitly asked to roleplay. Use concrete details from his profile; never use placeholders like [mention ...] or generic fillers. If specific info is missing, say so briefly. Prefer clear bullets with project names, tech, and impact. For "why hire" questions: a 1–2 sentence value prop plus 3–5 concrete bullets. If a question is unrelated, answer briefly and redirect to portfolio-related topics.`
 ;
 
   const fullPrompt = `${systemPrompt}\nUser: ${prompt}\nAI:`;
